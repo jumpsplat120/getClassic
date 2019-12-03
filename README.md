@@ -1,7 +1,6 @@
 # Classic
 
-A tiny class module for Lua. Attempts to stay simple and provide decent
-performance by avoiding unnecessary over-abstraction.
+A forked version of Classic by rxi, this is a tiny class module for Lua, that has support for getters and setters. Attempts to stay simple and provide decent performance by avoiding unnecessary over-abstraction.
 
 
 ## Usage
@@ -97,6 +96,29 @@ function Point:__tostring()
 end
 ```
 
+### Creating/Using a getter
+```lua
+function Point:get_x()
+  return math.floor(self.x + .5)
+end
+
+p = Point(5.6, 4.1)
+
+print(p.x) --6
+```
+
+### Creating/Using a setter
+```lua
+function Point:set_x()
+  if x < 0 then error("x can not be negative!") else return x end
+end
+
+p = Point(8, 3)
+
+print(p.x) -- 8
+p.x = 5    -- 5
+p.x = -4   -- Error!
+```
 
 ## License
 
