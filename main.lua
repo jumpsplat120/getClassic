@@ -7,7 +7,6 @@
 -- the terms of the MIT license. See LICENSE for details.
 --
 
-
 local Object = {}
 
 Object.__index = Object
@@ -19,15 +18,13 @@ function Object:extend()
 	end
 	
 	cls.__index = function(self, key)
-		if key:find("get_") then return cls[key] end
-		local getter = self["get_" .. key]
-		if getter then return getter(self) else return cls[key] end
+		local getter = rawget(cls, "get_" .. key)
+		if getter then return getter() else return cls[key] end
 	end
 	
 	cls.__newindex = function(self, key, value)
-		local setter = self["set_" .. key]
+		local setter = rawget(cls, "set_" .. key)
 		if setter then setter(self, value) else rawset(self, key, value) end
-		return true
 	end
 	
 	cls.super   = self
@@ -61,3 +58,5 @@ function Object:__call(...)
 	ins:new(...)
 	return ins
 end
+
+return Object
