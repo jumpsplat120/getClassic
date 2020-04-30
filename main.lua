@@ -19,7 +19,7 @@ function Object:extend()
 	
 	cls.__index = function(self, key)
 		local getter = rawget(cls, "get_" .. key)
-		if getter then return getter() else return cls[key] end
+		if getter then return getter(self) else return cls[key] end
 	end
 	
 	cls.__newindex = function(self, key, value)
