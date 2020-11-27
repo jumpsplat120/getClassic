@@ -110,8 +110,9 @@ print(p.x) --6
 ### Creating/Using a setter
 ```lua
 function Point:set_x(amount)
-  --Note the usage of rawset. If you assign the value of a variable within the setter function of itself, you will end up with a recursive loop.
-  if x < 0 then error("x can not be negative!") else rawset(self, x, amount) end
+  --Note the usage of rawset. If you assign the value of a variable within the setter 
+  --function of itself, you will end up with a recursive loop.
+  if self.x < 0 then error("x can not be negative!") else rawset(self, x, amount) end
 end
 
 p = Point(8, 3)
