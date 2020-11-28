@@ -101,7 +101,7 @@ end
 function Point:get_x()
   --Note the usage of rawget. If you access the value of a variable within the getter 
   --function of itself, you will end up with a recursive loop.
-  return math.floor(rawget(self, x) + .5)
+  return math.floor(rawget(self, "x") + .5)
 end
 
 p = Point(5.6, 4.1)
@@ -114,7 +114,7 @@ print(p.x) --6
 function Point:set_x(amount)
   --Note the usage of rawset. If you assign the value of a variable within the setter 
   --function of itself, you will end up with a recursive loop.
-  if amount < 0 then error("x can not be negative!") else rawset(self, x, amount) end
+  if amount < 0 then error("x can not be negative!") else rawset(self, "x", amount) end
 end
 
 p = Point(8, 3)
