@@ -98,10 +98,20 @@ end
 
 ### Creating/Using a getter
 ```lua
+function Point:new(x, y)
+  self.meta = {
+    x = x or 0,
+    y = y or 0
+  }
+end
+
 function Point:get_x()
-  --Note the usage of rawget. If you access the value of a variable within the getter 
-  --function of itself, you will end up with a recursive loop.
-  return math.floor(rawget(self, "x") + .5)
+  --Note the usage of a meta table. __index only attempts to
+  --retrieve a value if one with the name doesn't exist; in
+  --otherwords if you have a regular value and a getter that
+  --point to the same value, the getter function will not
+  --fire.
+  return math.floor(self.meta.x + .5)
 end
 
 p = Point(5.6, 4.1)
@@ -112,9 +122,7 @@ print(p.x) --6
 ### Creating/Using a setter
 ```lua
 function Point:set_x(amount)
-  --Note the usage of rawset. If you assign the value of a variable within the setter 
-  --function of itself, you will end up with a recursive loop.
-  if amount < 0 then error("x can not be negative!") else rawset(self, "x", amount) end
+  if amount < 0 then error("x can not be negative!") else self.meta.x = amount end
 end
 
 p = Point(8, 3)
