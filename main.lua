@@ -9,15 +9,17 @@ function Object:extend()
 	
 	mt.__index = function(self, key)
 		local raw, retval, getter
-		
+
 		if key:match("^_[^_]") then
 			retval = mt._access and mt[key] or nil
 		else
 			raw    = rawget(mt, "get_" .. key)
-			getter = raw and getter(self) or mt[key]
+			getter = raw or mt[key]
 			retval = function(...)
 				mt._access = true
-				local retval = getter(...)
+				local args = {...}
+				if raw then table.insert(args, 1, self) end
+				local retval = getter(unpack(args))
 				mt._access = false
 				return retval
 			end
@@ -57,18 +59,14 @@ function Object:is(T)
 	return false
 end
 
-function Object:__tostring()
+function Object:tostring()
 	assert(self.__type, "Missing  metavalue '__type'.")
 
-	local str, mt
+	return self.__type-- .. ": " .. inspect(self)
+end
 
-	mt = getmetatable(self)
-
-	mt._access = true
-	str        = self.__type .. ": "-- .. inspect(self)
-	mt._access = false
-
-	return str
+function Object:__tostring()
+	return self:tostring()
 end
 
 Object.__type = "Object"
@@ -86,7 +84,7 @@ type = function(obj)
 	local retval
 
 	if otype(obj) == "table" then
-		local mt = getmetatable(obj)
+		local mt = getmetatable(obj) or {}
 		retval   = mt.__type or "table"
 	else
 		retval = otype(obj)

@@ -42,12 +42,21 @@ function Rect:new(x, y, width, height)
 end
 ```
 
-### Checking an object's type
+### Changing the type
+```lua
+Point.__type = "point"
+
+local p = Point(4, 5)
+
+type(p) --point
+```
+
+### Validating an object's type
 ```lua
 local p = Point(10, 20)
 print(p:is(Object)) -- true
 print(p:is(Point)) -- true
-print(p:is(Rect)) -- false 
+print(p:is(Rect)) -- false
 ```
 
 ### Using mixins
@@ -105,20 +114,6 @@ function Point:__tostring()
 
 	return str
 end
-```
-
-### Changing the type
-```lua
-function Point:new(x, y)
-  self.x = x or 0
-  self.y = y or 0
-end
-
-Point.__type = "point"
-
-local p = Point(4, 5)
-
-type(p) --point
 ```
 
 ### Private variables
