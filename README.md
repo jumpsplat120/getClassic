@@ -96,22 +96,54 @@ function Point:__tostring()
 end
 ```
 
+### Private variables
+```lua
+--Append a private variable with an underscore, and it will only be accessible within methods
+--of the class
+function Point:new(x, y)
+  self._x = x or 0
+  self._y = y or 0
+end
+
+--You can access self._x and self._y here with no issues
+function Point:floorAndPrint()
+  print(math.floor(self._x), math.floor(self._y))
+end
+
+--Here is an example of reading AND writing the same value in a method
+function Point:floorX()
+  self._x = math.floor(self._x)
+end
+
+p = Point(5.6, 4.1)
+
+print(p._x)       --nil
+p:floorAndPrint() --5, 4
+p:floorX()        --self._x is set to 5
+
+--Attempting to set the private variable outside of a method will instead create a variable with
+--that value, which will effectively "overwrite" the private variable.
+p._x = 7.2
+
+print(p._x)       --7.2
+p:floorAndPrint() --7, 4
+p:floorX()        --the public version of self._x is set to 7
+```
+
 ### Creating/Using a getter
 ```lua
 function Point:new(x, y)
-  self.meta = {
-    x = x or 0,
-    y = y or 0
-  }
+  self._x = x or 0
+  self._y = y or 0
 end
 
 function Point:get_x()
-  --Note the usage of a meta table. __index only attempts to
+  --Note the usage of a private variable. __index only attempts to
   --retrieve a value if one with the name doesn't exist; in
   --otherwords if you have a regular value and a getter that
   --point to the same value, the getter function will not
   --fire.
-  return math.floor(self.meta.x + .5)
+  return math.floor(self._x + .5)
 end
 
 p = Point(5.6, 4.1)
@@ -122,7 +154,7 @@ print(p.x) --6
 ### Creating/Using a setter
 ```lua
 function Point:set_x(amount)
-  if amount < 0 then error("x can not be negative!") else self.meta.x = amount end
+  if amount < 0 then error("x can not be negative!") else self._x = amount end
 end
 
 p = Point(8, 3)

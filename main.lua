@@ -12,24 +12,41 @@ local Object = {}
 Object.__index = Object
 
 function Object:extend()
-	local cls = {}
-	for k, v in pairs(self) do
-		if k:find("__") then cls[k] = v end
+	local mt = {}
+	
+	for k, v in pairs(self) do if k:find("__") then mt[k] = v end end
+	
+	mt.__index = function(self, key)
+		local raw, retval, getter
+
+		if key:match("^_") then
+			retval = mt._access and mt[key] or nil
+		else
+			raw    = rawget(mt, "get_" .. key)
+			getter = raw and getter(self) or mt[key]
+			retval = function(...)
+				mt._access = true
+				local retval = getter(...)
+				mt._access = false
+				return retval
+			end
+		end
+
+		return retval
 	end
 	
-	cls.__index = function(self, key)
-		local getter = rawget(cls, "get_" .. key)
-		if getter then return getter(self) else return cls[key] end
+	mt.__newindex = function(self, key, value)
+		if key:match("^_") then
+			rawset(mt._access and mt or self, key, value)
+		else
+			local setter = rawget(mt, "set_" .. key)
+			if setter then setter(self, value) else rawset(self, key, value) end
+		end
 	end
 	
-	cls.__newindex = function(self, key, value)
-		local setter = rawget(cls, "set_" .. key)
-		if setter then setter(self, value) else rawset(self, key, value) end
-	end
-	
-	cls.super   = self
-	setmetatable(cls, self)
-	return cls
+	mt.super = self
+	setmetatable(mt, self)
+	return mt
 end
 
 function Object:implement(...)
@@ -54,9 +71,9 @@ function Object:__tostring()
 end
 
 function Object:__call(...)
-	local ins = setmetatable({}, self)
-	ins:new(...)
-	return ins
+	local instance = setmetatable({}, self)
+	instance:new(...)
+	return instance
 end
 
 return Object
