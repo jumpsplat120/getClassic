@@ -91,9 +91,34 @@ end
 
 ### Creating a metamethod
 ```lua
+--Private variables are determined by a metavalue called _access. Set _access to true to modify
+--the private variables and back to false to keep them private. This is because metamethods don't
+--fire __index, where _access is normally handled.
 function Point:__tostring()
-  return self.x .. ", " .. self.y
+  local str, mt
+
+	mt = getmetatable(self)
+
+	mt._access = true
+	str        = "X: " .. self._x .. ", Y: " .. self._y
+	mt._access = false
+
+	return str
 end
+```
+
+### Changing the type
+```lua
+function Point:new(x, y)
+  self.x = x or 0
+  self.y = y or 0
+end
+
+Point.__type = "point"
+
+local p = Point(4, 5)
+
+type(p) --point
 ```
 
 ### Private variables
@@ -162,9 +187,4 @@ p = Point(8, 3)
 p.x = 5  -- 5
 p.x = -4 -- Error!
 ```
-
-## License
-
-This module is free software; you can redistribute it and/or modify it under
-the terms of the MIT license. See [LICENSE](LICENSE) for details.
 

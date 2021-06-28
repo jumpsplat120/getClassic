@@ -1,12 +1,3 @@
---
--- classic
---
--- Copyright (c) 2014, rxi
---
--- This module is free software; you can redistribute it and/or modify it under
--- the terms of the MIT license. See LICENSE for details.
---
-
 local Object = {}
 
 Object.__index = Object
@@ -18,8 +9,8 @@ function Object:extend()
 	
 	mt.__index = function(self, key)
 		local raw, retval, getter
-
-		if key:match("^_") then
+		
+		if key:match("^_[^_]") then
 			retval = mt._access and mt[key] or nil
 		else
 			raw    = rawget(mt, "get_" .. key)
@@ -36,7 +27,7 @@ function Object:extend()
 	end
 	
 	mt.__newindex = function(self, key, value)
-		if key:match("^_") then
+		if key:match("^_[^_]") then
 			rawset(mt._access and mt or self, key, value)
 		else
 			local setter = rawget(mt, "set_" .. key)
@@ -67,13 +58,41 @@ function Object:is(T)
 end
 
 function Object:__tostring()
-	return "Object"
+	assert(self.__type, "Missing  metavalue '__type'.")
+
+	local str, mt
+
+	mt = getmetatable(self)
+
+	mt._access = true
+	str        = self.__type .. ": "-- .. inspect(self)
+	mt._access = false
+
+	return str
 end
+
+Object.__type = "Object"
 
 function Object:__call(...)
 	local instance = setmetatable({}, self)
 	instance:new(...)
 	return instance
+end
+
+-- monkeypatch
+otype = type
+
+type = function(obj)
+	local retval
+
+	if otype(obj) == "table" then
+		local mt = getmetatable(obj)
+		retval   = mt.__type or "table"
+	else
+		retval = otype(obj)
+	end
+
+	return retval
 end
 
 return Object
