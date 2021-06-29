@@ -1,5 +1,3 @@
-local inspect = require("lib.inspect.main")
-
 local Object = {}
 
 local function getLowestMetatable(tbl)
@@ -103,104 +101,27 @@ function Object:__tostring()
 	return self:tostring()
 end
 
-function Object:implement()
+function Object:tostring()
+	return getmetatable(self).__type
 end
 
-function Object:is()
+function Object:implement(...)
+	for _, class in pairs({...}) do for k, v in pairs(class) do
+		if type(v) == "function" and self[k] == nil then self[k] = v end
+    end end
 end
 
---Object.__type = "object"
+function Object:is(T)
+	local mt = getmetatable(self)
+	
+	while mt do
+		if mt == T then return true end
+		mt = getmetatable(mt)
+	end
+	
+	return false
+end
 
---
---function Object:__index(key)
---	local retval, get, mt
---	print("__index", key)
---	mt = getmetatable(self)
---
---	if key:match("^_[^_]") then
---		local lowest   = lowestMT(self)
---		print(inspect(mt), key)
---		print("Access?", lowest._access)
---		retval = lowest._access and mt[key] or nil
---		print("Fired?")
---	else
---		get = mt["get_" .. key]
---		if get then
---			local lowest   = lowestMT(self)
---			lowest._access = true
---			retval         = get(self)
---			lowest._access = false
---		end
---
---		get = mt[key]
---		if get then
---			retval = function(...)
---				local lowest   = lowestMT(self)
---				lowest._access = true
---				local retval   = get(...)
---				lowest._access = false
---				return retval
---			end
---		end
---	end
---
---	return retval or nil
---end
---
---function Object:__newindex(key, value)
---	local mt, setter
---	
---	mt = getmetatable(self)
---
---	if key:match("^_[^_]") then
---		rawset(mt._access and mt or self, key, value)
---	else
---		setter = mt["set_" .. key]
---		if setter then setter(mt, value) else rawset(self, key, value) end
---	end
---end
---
---function Object:implement(...)
---	for _, cls in pairs({...}) do for k, v in pairs(cls) do
---		if self[k] == nil and type(v) == "function" then self[k] = v end
---    end end
---end
---
---function Object:is(T)
---	local mt = getmetatable(self)
---	
---	while mt do
---		if mt == T then return true end
---		mt = getmetatable(mt)
---	end
---	
---	return false
---end
---
---function Object:tostring()
---	assert(self.__type, "Missing  metavalue '__type'.")
---
---	return self.__type .. ": " .. inspect(self)
---end
---
-----This fires, but doesn't trigger __index, so mt._access is never enabled. That's
-----why we have tostring be different
---function Object:__tostring()
---	return self:tostring()
---end
---
-----Object.__type = "Object"
---
---function Object:__call(...)
---	local mt, instance
---	
---	mt = getmetatable(self)
---	
---	for k, v in pairs(self) do mt[k] = v end
---	
---	instance = setmetatable({}, mt)
---	instance:new(...)
---	return instance
---end
+Object.__type = "object"
 
 return Object
