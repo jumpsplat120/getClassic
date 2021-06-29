@@ -35,7 +35,7 @@ local p = Point(10, 20)
 Rect = Point:extend()
 
 function Rect:new(x, y, width, height)
-  Rect.super.new(self, x, y)
+  self:super(x, y)
   self.width = width or 0
   self.height = height or 0
 end
@@ -136,13 +136,8 @@ print(p._x)       --nil
 p:floorAndPrint() --5, 4
 p:floorX()        --self._x is set to 5
 
---Attempting to set the private variable outside of a method will instead create a variable with
---that value, which will effectively "overwrite" the private variable.
+--Attempting to set the private variable outside of a method will throw an error.
 p._x = 7.2
-
-print(p._x)       --7.2
-p:floorAndPrint() --7, 4
-p:floorX()        --the public version of self._x is set to 7
 ```
 
 ### Creating/Using a getter
