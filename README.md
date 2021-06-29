@@ -1,7 +1,6 @@
 # Classic
 
-A forked version of Classic by rxi, this is a tiny class module for Lua, that has support for getters and setters. Attempts to stay simple and provide decent performance by avoiding unnecessary over-abstraction.
-
+This is a tiny class module for Lua, that has support for getters and setters, as well as private variables. Attempts to stay simple and provide decent performance by avoiding unnecessary over-abstraction.
 
 ## Usage
 
