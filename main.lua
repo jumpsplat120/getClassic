@@ -1,3 +1,4 @@
+local inspect = require("lib.inspect.main")
 local Object = {}
 
 Object.__index = Object
@@ -8,20 +9,26 @@ function Object:extend()
 	for k, v in pairs(self) do if k:find("__") then mt[k] = v end end
 	
 	mt.__index = function(self, key)
-		local raw, retval, getter
+		local retval, get
 
 		if key:match("^_[^_]") then
 			retval = mt._access and mt[key] or nil
 		else
-			raw    = rawget(mt, "get_" .. key)
-			getter = raw or mt[key]
-			retval = function(...)
+			get = mt["get_" .. key]
+			
+			if get then
 				mt._access = true
-				local args = {...}
-				if raw then table.insert(args, 1, self) end
-				local retval = getter(unpack(args))
+				retval     = get(self)
 				mt._access = false
-				return retval
+			else
+				get = mt[key]
+				
+				retval = function(...)
+					mt._access   = true
+					local retval = get(...)
+					mt._access   = false
+					return retval
+				end
 			end
 		end
 
@@ -32,8 +39,8 @@ function Object:extend()
 		if key:match("^_[^_]") then
 			rawset(mt._access and mt or self, key, value)
 		else
-			local setter = rawget(mt, "set_" .. key)
-			if setter then setter(self, value) else rawset(self, key, value) end
+			local setter = mt["set_" .. key]
+			if setter then setter(mt, value) else rawset(self, key, value) end
 		end
 	end
 	
@@ -62,9 +69,11 @@ end
 function Object:tostring()
 	assert(self.__type, "Missing  metavalue '__type'.")
 
-	return self.__type-- .. ": " .. inspect(self)
+	return self.__type .. ": " .. inspect(self)
 end
 
+--This fires, but doesn't trigger __index, so mt._access is never enabled. That's
+--why we have tostring be different
 function Object:__tostring()
 	return self:tostring()
 end

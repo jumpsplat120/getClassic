@@ -100,19 +100,15 @@ end
 
 ### Creating a metamethod
 ```lua
---Private variables are determined by a metavalue called _access. Set _access to true to modify
---the private variables and back to false to keep them private. This is because metamethods don't
---fire __index, where _access is normally handled.
-function Point:__tostring()
-  local str, mt
+--In the case of tostring, it needs to be called like this, due to the fact
+--that it doesn't trigger __index normally.
+function Point:tostring()
+	return "X: " .. self._x .. ", Y: " .. self._y
+end
 
-	mt = getmetatable(self)
-
-	mt._access = true
-	str        = "X: " .. self._x .. ", Y: " .. self._y
-	mt._access = false
-
-	return str
+--other metamethods are done like you'd expect
+function Point:__add(val)
+  return self._x + val.x
 end
 ```
 
