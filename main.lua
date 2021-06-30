@@ -50,7 +50,7 @@ function Object:__index(k)
 		lowest = getLowestMetatable(self)
 		retval = lowest._access and rawget(self, k) or nil
 	else
-		get = mt[(k:match("^get_") and "" or "get_") .. k]
+		get = mt["get_" .. k]
 		if get then
 			lowest         = getLowestMetatable(self)
 			lowest._access = true
@@ -85,7 +85,7 @@ function Object:__newindex(k, v)
 		assert(has_access, "You cannot set a private variable outside of an internal scope.")
 		rawset(self, k, v)
 	else
-		setter = mt[(k:match("^set_") and "" or "set_") .. k]
+		setter = mt["set_" .. k]
 		if setter then
 			local lowest   = getLowestMetatable(self)
 			lowest._access = true
