@@ -98,44 +98,74 @@ end
 
 ### Using private variables
 ```lua
+--All instances come with a uuid inherently. This is used to
+--access a locally scoped table that contains all private variables.
+
+--ex.
+--{ [abc-123] = { x = 1, y = 2 },
+--  [def-456] = { x = 3, y = 6} }
+
+--The table is only accessible in the places you "require" it, so
+--it can be local to each Class, but not in main, for example. The
+--uuid is NOT private, but is useless without the table, so as long
+--as you're handling scope correctly there's no need to worry about
+--someone using the uuid to access the table.
+
 --../bin/instances.lua
 local instances = {}
 
 return instances
 
 --Point file
-local Point   = Object:extend()
+local Object  = require("Object")
 local private = require("bin.instances")
 
+local Point = Object:extend()
+
 function Point:new(x, y)
-  private[self] = private[self] or {}
+  private[self.uuid] = private[self.uuid] or {}
  
-  private[self].x = x or 0
-  private[self].y = y or 0
+  private[self.uuid].x = x or 0
+  private[self.uuid].y = y or 0
 end
 
 function Point:getMagnitude()
-  return math.sqrt(private[self].x * private[self].x + private[self].y * private[self].y)
+  return math.sqrt(private[self.uuid].x * private[self.uuid].x + private[self.uuid].y * private[self.uuid].y)
 end
 
+return Point
 --Rect file
-local Rect    = Point:extend()
+local Point   = require("Point")
 local private = require("bin.instances")
 
-function Rect:new(x, y, width, height)
-  private[self] = private[self] or {}
+local Rect = Point:extend()
 
-  private[self].w = width or 0
-  private[self].h = height or 0
+function Rect:new(x, y, width, height)
+  private[self.uuid] = private[self.uuid] or {}
+
+  private[self.uuid].w = width or 0
+  private[self.uuid].h = height or 0
 
   Rect.super.new(self, x, y)
 end
 
 function Rect:__tostring()
-  return "width: " .. private[self].w .. "; height: " .. private[self].h .. "; x: " .. private[self].x .. "; y: " .. private[self].y 
+  return "width: " .. private[self.uuid].w .. "; height: " .. private[self.uuid].h .. "; x: " .. private[self.uuid].x .. "; y: " .. private[self.uuid].y 
 end
 
+return Rect
 
+--main
+local Point = require("Point")
+local Rect  = require("Rect")
+
+p = Point(4, 5)
+print(p.x) --4
+
+r = Rect(1, 2, 3, 4)
+print(r) --width: 3; height: 4; x: 1; y: 2
+print(r.x) --1
+print(r:getMagnitude()) --2.23606797749979
 ```
 
 ### Creating/Using a getter
