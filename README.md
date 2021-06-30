@@ -9,7 +9,7 @@ The [module](classic.lua) should be dropped in to an existing project and
 required by it:
 
 ```lua
-Object = require "classic"
+local Object = require "classic"
 ```
 
 The module returns the object base class which can be extended to create any
@@ -18,7 +18,7 @@ additional classes.
 
 ### Creating a new class
 ```lua
-Point = Object:extend()
+local Point = Object:extend()
 
 function Point:new(x, y)
   self.x = x or 0
@@ -33,7 +33,7 @@ local p = Point(10, 20)
 
 ### Extending an existing class
 ```lua
-Rect = Point:extend()
+local Rect = Point:extend()
 
 function Rect:new(x, y, width, height)
   Rect.super.new(self, x, y)
@@ -52,7 +52,7 @@ print(p:is(Rect)) -- false
 
 ### Using mixins
 ```lua
-PairPrinter = Object:extend()
+local PairPrinter = Object:extend()
 
 function PairPrinter:printPairs()
   for k, v in pairs(self) do
@@ -61,7 +61,7 @@ function PairPrinter:printPairs()
 end
 
 
-Point = Object:extend()
+local Point = Object:extend()
 Point:implement(PairPrinter)
 
 function Point:new(x, y)
@@ -76,7 +76,7 @@ p:printPairs()
 
 ### Using static variables
 ```lua
-Point = Object:extend()
+local Point = Object:extend()
 Point.scale = 2
 
 function Point:new(x, y)
@@ -86,6 +86,25 @@ end
 
 function Point:getScaled()
   return self.x * Point.scale, self.y * Point.scale
+end
+```
+
+### Using private variables
+```lua
+--Either use do/end to force a local scope within the same file,
+--or use a seperate file and return just the Class.
+local Point   = Object:extend()
+local private = {}
+
+function Point:new(x, y)
+  private[self] = {
+    x = x or 0,
+    y = y or 0
+  }
+end
+
+function Point:getMagnitude()
+  return math.sqrt(private[self].x * private[self].x + private[self].y * private[self].y)
 end
 ```
 
@@ -99,24 +118,34 @@ end
 ### Creating/Using a getter
 ```lua
 function Point:new(x, y)
-  self.meta = {
+  private[self] = {
     x = x or 0,
     y = y or 0
   }
 end
 
 function Point:get_x()
-  --Note the usage of a meta table. __index only attempts to
+  --Note the usage of a private variable. __index only attempts to
   --retrieve a value if one with the name doesn't exist; in
   --otherwords if you have a regular value and a getter that
   --point to the same value, the getter function will not
   --fire.
-  return math.floor(self.meta.x + .5)
+  return math.floor(private[self].x + .5)
+end
+
+function Point:printPrivateX()
+  print(private[self].x)
 end
 
 p = Point(5.6, 4.1)
 
-print(p.x) --6
+print(p.x)        --6
+p:printPrivateX() --6
+
+p.x = 3 --now that a value exists, __index won't fire, and subsequently the getter won't fire.
+
+print(p.x)        --3
+p:printPrivateX() --6
 ```
 
 ### Creating/Using a setter
@@ -135,4 +164,3 @@ p.x = -4 -- Error!
 
 This module is free software; you can redistribute it and/or modify it under
 the terms of the MIT license. See [LICENSE](LICENSE) for details.
-
