@@ -74,6 +74,13 @@ local p = Point()
 p:printPairs()
 ```
 
+### Creating a metamethod
+```lua
+function Point:__tostring()
+  return self.x .. ", " .. self.y
+end
+```
+
 ### Using static variables
 ```lua
 local Point = Object:extend()
@@ -91,28 +98,44 @@ end
 
 ### Using private variables
 ```lua
---Either use do/end to force a local scope within the same file,
---or use a seperate file and return just the Class.
+--../bin/instances.lua
+local instances = {}
+
+return instances
+
+--Point file
 local Point   = Object:extend()
-local private = {}
+local private = require("bin.instances")
 
 function Point:new(x, y)
-  private[self] = {
-    x = x or 0,
-    y = y or 0
-  }
+  private[self] = private[self] or {}
+ 
+  private[self].x = x or 0
+  private[self].y = y or 0
 end
 
 function Point:getMagnitude()
   return math.sqrt(private[self].x * private[self].x + private[self].y * private[self].y)
 end
-```
 
-### Creating a metamethod
-```lua
-function Point:__tostring()
-  return self.x .. ", " .. self.y
+--Rect file
+local Rect    = Point:extend()
+local private = require("bin.instances")
+
+function Rect:new(x, y, width, height)
+  private[self] = private[self] or {}
+
+  private[self].w = width or 0
+  private[self].h = height or 0
+
+  Rect.super.new(self, x, y)
 end
+
+function Rect:__tostring()
+  return "width: " .. private[self].w .. "; height: " .. private[self].h .. "; x: " .. private[self].x .. "; y: " .. private[self].y 
+end
+
+
 ```
 
 ### Creating/Using a getter
