@@ -31,7 +31,7 @@ function Object:extend()
 	end
 	
 	cls.__newindex = function(self, key, value)
-		local setter = rawget(cls, "set_" .. key)
+		local setter = cls["set_" .. key]
 		if setter then setter(self, value) else rawset(self, key, value) end
 	end
 	
@@ -67,6 +67,6 @@ function Object:__call(...)
 	return ins
 end
 
-Object.__type = "object"
+--Object.__type = "object"
 
 return Object
